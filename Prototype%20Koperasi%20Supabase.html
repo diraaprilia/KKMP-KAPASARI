@@ -1,0 +1,177 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><title>Prototype Koperasi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#f6f7f5;--card:#fff;--tx:#1d2a22;--mu:#66736b;--bd:#dfe4df;--pr:#1f7a4d;--prt:#fff;--ok:#1f7a4d;--okb:#e0f2e8;--wn:#a15c00;--wnb:#fff1d6;--er:#b3261e;--erb:#fde4e2;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121815;--card:#1b2420;--tx:#e8eee9;--mu:#9aa89f;--bd:#2c3832;--pr:#4cc185;--prt:#08130d;--ok:#6fdca4;--okb:#173a28;--wn:#f0b45a;--wnb:#3b2c10;--er:#ff8a80;--erb:#431a17}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.4 Arial,Helvetica,sans-serif;background:var(--bg);color:var(--tx)}
+header{padding:14px 16px 0}h1{font-size:18px;margin:0}header small{color:var(--mu)}
+nav{display:flex;gap:6px;overflow-x:auto;padding:12px 16px;position:sticky;top:0;background:var(--bg);z-index:5}
+nav button{white-space:nowrap;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:8px 14px;border-radius:20px;cursor:pointer;font-size:14px}
+nav button.on{background:var(--pr);color:var(--prt);border-color:var(--pr)}
+main{padding:0 16px 40px;max-width:1100px;margin:auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+.hint{color:var(--mu);font-size:13px;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.k{background:var(--bg);border-radius:10px;padding:10px}.k b{display:block;font-size:17px;margin-top:2px}.k span{font-size:12px;color:var(--mu)}
+.add{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.add label{display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:3px}
+input,select{font:inherit;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);min-width:110px}
+.btn{background:var(--pr);color:var(--prt);border:0;padding:9px 16px;border-radius:8px;cursor:pointer;font:inherit;font-weight:bold}
+.btn.o{background:transparent;color:var(--pr);border:1px solid var(--pr)}
+.x{background:var(--erb);border:0;color:var(--er);cursor:pointer;font-size:13px;padding:5px 12px;border-radius:8px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--bd);white-space:nowrap}th{color:var(--mu);font-weight:normal;font-size:12px;position:sticky;top:0;background:var(--card)}
+td.r{text-align:right}
+.b{padding:2px 9px;border-radius:12px;font-size:12px;font-weight:bold}.g{background:var(--okb);color:var(--ok)}.y{background:var(--wnb);color:var(--wn)}.rd{background:var(--erb);color:var(--er)}
+.big{font-size:16px;padding:10px 14px;border-radius:10px;margin:10px 0;font-weight:bold}
+.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.mx td:first-child,.mx th:first-child{position:sticky;left:0;background:var(--card)}.mu{color:var(--mu)}.row .btn{padding:6px 12px}</style></head><body>
+<header><h1 id="jd"></h1><small id="syncStatus" role="status">Menyiapkan penyimpanan...</small></header>
+<nav id="nav"></nav><main id="app"></main>
+<script>
+const SEED={"set": {"nama": "Koperasi Desa Merah Putih (KDMP)", "desa": "Desa Contoh", "pokok": 50000, "cicil": 3, "bulanan": 20000, "dasar": "Total"}, "ang": [{"n": "Siti Aminah", "rw": "RW 01", "rt": "RT 01", "t": "2026-01-05", "s": "Aktif"}, {"n": "Budi Santoso", "rw": "RW 01", "rt": "RT 02", "t": "2026-01-05", "s": "Aktif"}, {"n": "Wahyuni", "rw": "RW 02", "rt": "RT 01", "t": "2026-01-12", "s": "Aktif"}, {"n": "Hendra Kurniawan", "rw": "RW 02", "rt": "RT 03", "t": "2026-01-12", "s": "Aktif"}, {"n": "Dewi Lestari", "rw": "RW 03", "rt": "RT 02", "t": "2026-01-19", "s": "Aktif"}, {"n": "Agus Salim", "rw": "RW 03", "rt": "RT 01", "t": "2026-02-02", "s": "Aktif"}, {"n": "Ratna Sari", "rw": "RW 04", "rt": "RT 02", "t": "2026-02-02", "s": "Aktif"}, {"n": "Slamet Riyadi", "rw": "RW 04", "rt": "RT 04", "t": "2026-02-09", "s": "Aktif"}, {"n": "Nur Hidayah", "rw": "RW 05", "rt": "RT 01", "t": "2026-03-02", "s": "Aktif"}, {"n": "Joko Prasetyo", "rw": "RW 05", "rt": "RT 03", "t": "2026-03-02", "s": "Aktif"}, {"n": "Endang Susilowati", "rw": "RW 06", "rt": "RT 02", "t": "2026-04-06", "s": "Aktif"}, {"n": "Mulyono", "rw": "RW 07", "rt": "RT 01", "t": "2026-05-04", "s": "Aktif"}], "sim": [{"d": "2026-01-05", "n": "Budi Santoso (RW 01)", "j": "Pokok", "v": 20000, "c": ""}, {"d": "2026-01-05", "n": "Siti Aminah (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-01-05", "n": "Siti Aminah (RW 01)", "j": "Pokok", "v": 50000, "c": ""}, {"d": "2026-01-06", "n": "Budi Santoso (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-01-07", "n": "Wahyuni (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-01-08", "n": "Hendra Kurniawan (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-01-09", "n": "Dewi Lestari (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-01-12", "n": "Hendra Kurniawan (RW 02)", "j": "Pokok", "v": 50000, "c": ""}, {"d": "2026-01-12", "n": "Wahyuni (RW 02)", "j": "Pokok", "v": 25000, "c": ""}, {"d": "2026-01-19", "n": "Dewi Lestari (RW 03)", "j": "Pokok", "v": 20000, "c": ""}, {"d": "2026-02-02", "n": "Agus Salim (RW 03)", "j": "Pokok", "v": 50000, "c": ""}, {"d": "2026-02-02", "n": "Ratna Sari (RW 04)", "j": "Pokok", "v": 25000, "c": ""}, {"d": "2026-02-05", "n": "Agus Salim (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-02-05", "n": "Budi Santoso (RW 01)", "j": "Pokok", "v": 20000, "c": ""}, {"d": "2026-02-05", "n": "Siti Aminah (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-02-06", "n": "Budi Santoso (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-02-06", "n": "Ratna Sari (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-02-07", "n": "Slamet Riyadi (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-02-07", "n": "Wahyuni (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-02-08", "n": "Hendra Kurniawan (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-02-09", "n": "Dewi Lestari (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-02-09", "n": "Slamet Riyadi (RW 04)", "j": "Pokok", "v": 50000, "c": ""}, {"d": "2026-02-12", "n": "Wahyuni (RW 02)", "j": "Pokok", "v": 25000, "c": ""}, {"d": "2026-02-19", "n": "Dewi Lestari (RW 03)", "j": "Pokok", "v": 20000, "c": ""}, {"d": "2026-03-02", "n": "Joko Prasetyo (RW 05)", "j": "Pokok", "v": 20000, "c": ""}, {"d": "2026-03-02", "n": "Nur Hidayah (RW 05)", "j": "Pokok", "v": 20000, "c": ""}, {"d": "2026-03-05", "n": "Agus Salim (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-03-05", "n": "Budi Santoso (RW 01)", "j": "Pokok", "v": 10000, "c": ""}, {"d": "2026-03-05", "n": "Siti Aminah (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-03-06", "n": "Budi Santoso (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-03-06", "n": "Ratna Sari (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-03-07", "n": "Slamet Riyadi (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-03-07", "n": "Wahyuni (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-03-08", "n": "Hendra Kurniawan (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-03-08", "n": "Nur Hidayah (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-03-09", "n": "Dewi Lestari (RW 03)", "j": "Bulanan", "v": 10000, "c": ""}, {"d": "2026-03-09", "n": "Joko Prasetyo (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-04-02", "n": "Nur Hidayah (RW 05)", "j": "Pokok", "v": 15000, "c": ""}, {"d": "2026-04-05", "n": "Agus Salim (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-04-05", "n": "Endang Susilowati (RW 06)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-04-05", "n": "Siti Aminah (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-04-06", "n": "Budi Santoso (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-04-06", "n": "Endang Susilowati (RW 06)", "j": "Pokok", "v": 50000, "c": ""}, {"d": "2026-04-06", "n": "Ratna Sari (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-04-07", "n": "Slamet Riyadi (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-04-07", "n": "Wahyuni (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-04-08", "n": "Hendra Kurniawan (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-04-08", "n": "Nur Hidayah (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-04-09", "n": "Dewi Lestari (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-04-09", "n": "Joko Prasetyo (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-05-04", "n": "Mulyono (RW 07)", "j": "Pokok", "v": 25000, "c": ""}, {"d": "2026-05-04", "n": "Nur Hidayah (RW 05)", "j": "Pokok", "v": 15000, "c": ""}, {"d": "2026-05-05", "n": "Agus Salim (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-05-05", "n": "Endang Susilowati (RW 06)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-05-05", "n": "Siti Aminah (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-05-06", "n": "Budi Santoso (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-05-06", "n": "Mulyono (RW 07)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-05-07", "n": "Slamet Riyadi (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-05-07", "n": "Wahyuni (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-05-08", "n": "Hendra Kurniawan (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-05-08", "n": "Nur Hidayah (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-05-09", "n": "Dewi Lestari (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-05-09", "n": "Joko Prasetyo (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-06-05", "n": "Agus Salim (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-06-05", "n": "Endang Susilowati (RW 06)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-06-05", "n": "Siti Aminah (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-06-06", "n": "Mulyono (RW 07)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-06-06", "n": "Ratna Sari (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-06-07", "n": "Slamet Riyadi (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-06-07", "n": "Wahyuni (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-06-08", "n": "Hendra Kurniawan (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-06-08", "n": "Nur Hidayah (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-06-09", "n": "Dewi Lestari (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-06-09", "n": "Joko Prasetyo (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-07-05", "n": "Agus Salim (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-07-05", "n": "Endang Susilowati (RW 06)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-07-05", "n": "Siti Aminah (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-07-06", "n": "Ratna Sari (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-07-07", "n": "Slamet Riyadi (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-07-07", "n": "Wahyuni (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-07-08", "n": "Hendra Kurniawan (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-07-08", "n": "Nur Hidayah (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-07-09", "n": "Dewi Lestari (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-08-05", "n": "Agus Salim (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-08-05", "n": "Endang Susilowati (RW 06)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-08-05", "n": "Siti Aminah (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-08-06", "n": "Ratna Sari (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-08-07", "n": "Slamet Riyadi (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-08-07", "n": "Wahyuni (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-08-08", "n": "Hendra Kurniawan (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-08-08", "n": "Nur Hidayah (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-08-09", "n": "Dewi Lestari (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-09-05", "n": "Agus Salim (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-09-05", "n": "Endang Susilowati (RW 06)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-09-05", "n": "Siti Aminah (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-09-06", "n": "Budi Santoso (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-09-06", "n": "Ratna Sari (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-09-07", "n": "Slamet Riyadi (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-09-07", "n": "Wahyuni (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-09-08", "n": "Nur Hidayah (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-09-09", "n": "Dewi Lestari (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-10-05", "n": "Agus Salim (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-10-05", "n": "Siti Aminah (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-10-06", "n": "Budi Santoso (RW 01)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-10-06", "n": "Ratna Sari (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-10-07", "n": "Slamet Riyadi (RW 04)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-10-07", "n": "Wahyuni (RW 02)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-10-08", "n": "Nur Hidayah (RW 05)", "j": "Bulanan", "v": 20000, "c": ""}, {"d": "2026-10-09", "n": "Dewi Lestari (RW 03)", "j": "Bulanan", "v": 20000, "c": ""}], "amb": [{"d": "2026-03-10", "n": "Siti Aminah (RW 01)", "b": "Beras Premium 5 kg", "q": 2}, {"d": "2026-03-10", "n": "Siti Aminah (RW 01)", "b": "Minyak Goreng 1 L", "q": 3}, {"d": "2026-03-15", "n": "Wahyuni (RW 02)", "b": "Gula Pasir 1 kg", "q": 2}, {"d": "2026-04-04", "n": "Dewi Lestari (RW 03)", "b": "Beras Premium 5 kg", "q": 1}, {"d": "2026-04-20", "n": "Budi Santoso (RW 01)", "b": "Mie Instan", "q": 20}, {"d": "2026-05-06", "n": "Slamet Riyadi (RW 04)", "b": "Minyak Goreng 1 L", "q": 4}, {"d": "2026-05-18", "n": "Nur Hidayah (RW 05)", "b": "Telur Ayam", "q": 5}, {"d": "2026-06-03", "n": "Hendra Kurniawan (RW 02)", "b": "Beras Premium 5 kg", "q": 2}, {"d": "2026-06-22", "n": "Agus Salim (RW 03)", "b": "Tepung Terigu 1 kg", "q": 3}, {"d": "2026-07-08", "n": "Ratna Sari (RW 04)", "b": "Susu Kental Manis", "q": 6}, {"d": "2026-07-20", "n": "Endang Susilowati (RW 06)", "b": "Telur Ayam", "q": 4}, {"d": "2026-08-05", "n": "Wahyuni (RW 02)", "b": "Kecap Manis 275 ml", "q": 4}, {"d": "2026-08-19", "n": "Joko Prasetyo (RW 05)", "b": "Beras Premium 5 kg", "q": 1}, {"d": "2026-09-02", "n": "Mulyono (RW 07)", "b": "Gula Pasir 1 kg", "q": 2}, {"d": "2026-09-16", "n": "Siti Aminah (RW 01)", "b": "Teh Celup", "q": 6}, {"d": "2026-10-05", "n": "Dewi Lestari (RW 03)", "b": "Telur Ayam", "q": 3}, {"d": "2026-10-12", "n": "Nur Hidayah (RW 05)", "b": "Mie Instan", "q": 30}], "bay": [{"d": "2026-03-28", "n": "Siti Aminah (RW 01)", "v": 148000, "c": "Lunas"}, {"d": "2026-04-05", "n": "Siti Aminah (RW 01)", "v": 54000, "c": "Lunas"}, {"d": "2026-04-10", "n": "Wahyuni (RW 02)", "v": 18500, "c": "Cicilan"}, {"d": "2026-04-18", "n": "Dewi Lestari (RW 03)", "v": 74000, "c": "Lunas"}, {"d": "2026-04-28", "n": "Wahyuni (RW 02)", "v": 18500, "c": "Cicilan"}, {"d": "2026-05-10", "n": "Budi Santoso (RW 01)", "v": 28000, "c": "Cicilan"}, {"d": "2026-05-30", "n": "Slamet Riyadi (RW 04)", "v": 72000, "c": "Lunas"}, {"d": "2026-06-10", "n": "Nur Hidayah (RW 05)", "v": 147500, "c": "Lunas"}, {"d": "2026-07-01", "n": "Hendra Kurniawan (RW 02)", "v": 74000, "c": "Cicilan"}, {"d": "2026-07-20", "n": "Agus Salim (RW 03)", "v": 37500, "c": "Lunas"}, {"d": "2026-08-01", "n": "Ratna Sari (RW 04)", "v": 37500, "c": "Cicilan"}, {"d": "2026-08-30", "n": "Wahyuni (RW 02)", "v": 44000, "c": "Lunas"}, {"d": "2026-09-10", "n": "Joko Prasetyo (RW 05)", "v": 22200, "c": "Cicilan"}], "brg": [{"n": "Beras Premium 5 kg", "u": "pak", "m": 68000, "j": 74000, "s0": 40, "s1": 35, "min": 10}, {"n": "Minyak Goreng 1 L", "u": "btl", "m": 16500, "j": 18000, "s0": 60, "s1": 30, "min": 15}, {"n": "Gula Pasir 1 kg", "u": "kg", "m": 17000, "j": 18500, "s0": 50, "s1": 20, "min": 10}, {"n": "Telur Ayam", "u": "kg", "m": 27000, "j": 29500, "s0": 15, "s1": 5, "min": 8}, {"n": "Tepung Terigu 1 kg", "u": "kg", "m": 11000, "j": 12500, "s0": 30, "s1": 0, "min": 8}, {"n": "Mie Instan", "u": "bks", "m": 3100, "j": 3500, "s0": 200, "s1": 100, "min": 40}, {"n": "Garam 250 gr", "u": "bks", "m": 2500, "j": 3000, "s0": 50, "s1": 0, "min": 10}, {"n": "Teh Celup", "u": "kotak", "m": 6500, "j": 7500, "s0": 40, "s1": 0, "min": 10}, {"n": "Kecap Manis 275 ml", "u": "btl", "m": 9500, "j": 11000, "s0": 30, "s1": 0, "min": 8}, {"n": "Susu Kental Manis", "u": "kaleng", "m": 11500, "j": 12500, "s0": 40, "s1": 0, "min": 10}]};
+// KONFIGURASI SUPABASE: isi URL projek dan anon/public key dari dashboard Supabase.
+const SUPABASE_URL = 'ISI_URL_SUPABASE_DI_SINI';
+const SUPABASE_ANON_KEY = 'ISI_ANON_PUBLIC_KEY_DI_SINI';
+const cloudReady = () => SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('ISI_URL_') && SUPABASE_ANON_KEY.length > 20 && !SUPABASE_ANON_KEY.includes('ISI_ANON_');
+let cloudTimer = null;
+function setSyncStatus(message, kind=''){
+ const el=document.getElementById('syncStatus');
+ if(!el)return;
+ el.textContent=message;
+ el.style.color=kind==='ok'?'var(--ok)':kind==='err'?'var(--er)':'var(--mu)';
+}
+function cloudHeaders(extra={}){
+ return {'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,...extra};
+}
+async function syncToCloud(){
+ if(!cloudReady())return;
+ setSyncStatus('Menyimpan perubahan ke database...');
+ try{
+  const r=await fetch(SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/kdmp_state?on_conflict=id',{
+   method:'POST',
+   headers:cloudHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),
+   body:JSON.stringify({id:1,data:S,updated_at:new Date().toISOString()})
+  });
+  if(!r.ok)throw new Error(await r.text());
+  setSyncStatus('Tersimpan di database online ✓','ok');
+ }catch(e){
+  console.error('Supabase save error:',e);
+  setSyncStatus('Gagal menyimpan online. Periksa pengaturan Supabase.','err');
+ }
+}
+async function initStorage(){
+ if(!cloudReady()){
+  setSyncStatus('Belum terhubung ke Supabase — data hanya tersimpan di browser ini.','err');
+  render();
+  return;
+ }
+ setSyncStatus('Menghubungkan ke database...');
+ try{
+  const r=await fetch(SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/kdmp_state?select=data&id=eq.1',{
+   headers:cloudHeaders()
+  });
+  if(!r.ok)throw new Error(await r.text());
+  const rows=await r.json();
+  if(rows.length && rows[0].data){
+   S=rows[0].data;
+   try{localStorage.setItem('kdmp1',JSON.stringify(S))}catch(e){}
+   setSyncStatus('Terhubung ke database online ✓','ok');
+  }else{
+   // Jika tabel masih kosong, isi dengan data lokal yang ada atau data contoh.
+   await syncToCloud();
+  }
+ }catch(e){
+  console.error('Supabase load error:',e);
+  setSyncStatus('Gagal terhubung. Periksa URL, key, dan SQL Supabase.','err');
+ }
+ render();
+}
+let S,tab='dashboard',sel='',sub='pokok',thn=new Date().getFullYear();
+try{S=JSON.parse(localStorage.getItem('kdmp1'))}catch(e){}
+if(!S)S=JSON.parse(JSON.stringify(SEED));
+const save=()=>{
+ try{localStorage.setItem('kdmp1',JSON.stringify(S))}catch(e){}
+ if(!cloudReady()){
+  setSyncStatus('Belum terhubung ke Supabase — data hanya tersimpan di browser ini.','err');
+  return;
+ }
+ clearTimeout(cloudTimer);
+ setSyncStatus('Perubahan belum disinkronkan...');
+ cloudTimer=setTimeout(syncToCloud,500);
+};
+const rp=n=>'Rp '+Math.round(n).toLocaleString('id-ID');
+const nm=a=>a.n+' ('+a.rw+')';
+const today=new Date().toISOString().slice(0,10);
+const TABS=[['dashboard','Dashboard'],['anggota','Anggota'],['simpanan','Simpanan'],['sembako','Ambil Sembako'],['utang','Bayar Utang'],['barang','Barang'],['atur','Pengaturan']];
+const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0);
+function calc(){
+ const P=S.set,bar={};S.brg.forEach(b=>bar[b.n]=b);
+ const amb=S.amb.map(a=>{const b=bar[a.b]||{};return{...a,u:b.u||'',h:b.j||0,tot:a.q*(b.j||0),hpp:a.q*(b.m||0)}});
+ const M=S.ang.map(a=>{const k=nm(a),sp=S.sim.filter(x=>x.n===k);
+  const pk=sum(sp.filter(x=>x.j==='Pokok'),x=>x.v),bl=sum(sp.filter(x=>x.j==='Bulanan'),x=>x.v);
+  const d=new Date(a.t),t=new Date(),bln=Math.max(0,(t.getFullYear()-d.getFullYear())*12+t.getMonth()-d.getMonth()+1);
+  const kP=Math.max(0,P.pokok-pk),kB=Math.max(0,bln*P.bulanan-bl),tot=pk+bl,batas=P.dasar==='Total'?tot:bl;
+  const ab=sum(amb.filter(x=>x.n===k),x=>x.tot),by=sum(S.bay.filter(x=>x.n===k),x=>x.v),sisa=ab-by,jt=Math.max(0,batas-sisa);
+  return{...a,k,pk,bl,kP,kB,tot,kur:kP+kB,batas,ab,by,sisa,jt,st:sisa>batas?'MELEBIHI BATAS':jt<=0?'JATAH HABIS':'BOLEH AMBIL'}});
+ const B=S.brg.map(b=>{const o=sum(amb.filter(x=>x.b===b.n),x=>x.q),s=b.s0+b.s1-o;
+  return{...b,o,s,nilai:s*b.m,pinj:sum(amb.filter(x=>x.b===b.n),x=>x.tot),unt:sum(amb.filter(x=>x.b===b.n),x=>x.tot-x.hpp),st:s<0?'STOK KURANG':s===0?'HABIS':s<=b.min?'MENIPIS':'AMAN'}});
+ return{M,B,amb,mm:Object.fromEntries(M.map(m=>[m.k,m])),bb:Object.fromEntries(B.map(b=>[b.n,b]))};
+}
+const badge=s=>{const c=/OK|BOLEH|AMAN|Lunas/.test(s)?'g':/HABIS|MENIPIS|Cicilan pokok|Lebih/.test(s)?'y':'rd';return`<span class="b ${c}">${s}</span>`};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function tbl(cols,rows,key){
+ return`<div class="tw"><table><tr>${cols.map(c=>`<th>${c[0]}</th>`).join('')}<th>Aksi</th></tr>${rows.map((r,i)=>`<tr>${cols.map(c=>{const v=c[1](r,i);return`<td class="${c[2]||''}">${v}</td>`}).join('')}<td>${key?`<button class="x" onclick="del('${key}',${r._i??i})">Hapus</button>`:''}</td></tr>`).join('')}</table></div>`}
+function form(id,fields,key,extra=''){
+ return`<div class="card"><p class="hint">${extra}</p><div class="add">${fields.map(f=>`<label>${f[1]}${f[2]==='sel'?`<select id="${id}_${f[0]}">${f[3].map(o=>`<option>${esc(o)}</option>`).join('')}</select>`:`<input id="${id}_${f[0]}" type="${f[2]==='num'?'number':f[2]}" ${f[2]==='date'?`value="${today}"`:''} ${f[2]==='num'?'min="0"':''}>`}</label>`).join('')}<button class="btn" onclick="add('${key}','${id}',${esc(JSON.stringify(fields.map(f=>[f[0],f[2]]))).replace(/'/g,'&#39;')?`'${esc(JSON.stringify(fields.map(f=>[f[0],f[2]])))}'`:''})">+ Tambah</button></div></div>`}
+function add(key,id,fs){fs=JSON.parse(fs);const o={};
+ for(const[k,t]of fs){const e=document.getElementById(id+'_'+k);let v=e.value;if(t==='num')v=+v;if(v===''||(t==='num'&&!v)){if(k!=='c'){e.focus();return alert('Mohon lengkapi: '+k)}}o[k]=v}
+ if(key==='sim')o.j=sub==='pokok'?'Pokok':'Bulanan';if(key==='ang'){o.rt='';o.s='Aktif'}if(key==='brg')o.min=5;S[key].push(o);save();render()}
+function del(key,i){if(confirm('Yakin hapus data ini? Tidak bisa dibatalkan.')){S[key].splice(i,1);save();render()}}
+function exportXlsx(){const C=calc(),wb=XLSX.utils.book_new();
+ const add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r),n);
+ add('ANGGOTA',C.M.map(m=>({'Nama Lengkap':m.n,RW:m.rw,'Alamat / RT':m.rt,'Tanggal Bergabung':m.t,Status:m.s,'Total Simpanan':m.tot,'Total Kekurangan':m.kur,'Total Ambil Sembako':m.ab,'Sudah Dibayar':m.by,'Sisa Utang':m.sisa,'Sisa Jatah Pinjam':m.jt,'Status Sembako':m.st})));
+ add('SIMPANAN',S.sim.map(x=>({Tanggal:x.d,Nama:x.n,Jenis:x.j,'Jumlah (Rp)':x.v,Catatan:x.c||''})));
+ add('AMBIL_SEMBAKO',C.amb.map(x=>({Tanggal:x.d,Nama:x.n,Barang:x.b,Jumlah:x.q,Satuan:x.u,'Harga Satuan':x.h,'Total Harga':x.tot})));
+ add('BAYAR_UTANG',S.bay.map(x=>({Tanggal:x.d,Nama:x.n,'Jumlah Bayar':x.v,Catatan:x.c||''})));
+ add('BARANG',C.B.map(b=>({Nama:b.n,Satuan:b.u,'Harga Modal':b.m,'Harga Jual':b.j,'Stok Awal':b.s0,'Tambah Stok':b.s1,'Stok Minimum':b.min,'Sisa Stok':b.s,Status:b.st})));
+ add('PENGATURAN',[{'Nama Koperasi':S.set.nama,Desa:S.set.desa,'Simpanan Pokok':S.set.pokok,'Maks Cicilan Pokok':S.set.cicil,'Simpanan Bulanan':S.set.bulanan,'Batas Dihitung Dari':S.set.dasar}]);
+ XLSX.writeFile(wb,'KDMP_Koperasi_Export.xlsx')}
+function resetData(){if(confirm('Kembalikan ke data contoh awal? Perubahan Anda akan hilang.')){S=JSON.parse(JSON.stringify(SEED));save();render()}}
+const head=(t,h)=>`<div class="row"><div><b style="font-size:17px">${t}</b><p class="hint" style="margin:2px 0 0">${h}</p></div></div>`;
+function render(){
+ document.getElementById('jd').textContent=S.set.nama+' · '+S.set.desa;
+ document.getElementById('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';render();scrollTo(0,0)">${t[1]}</button>`).join('')+`<button onclick="exportXlsx()">⬇ Export Excel</button>`;
+ const C=calc(),el=document.getElementById('app'),names=C.M.map(m=>m.k);let h='';
+ if(tab==='dashboard'){
+  if(!sel||!C.mm[sel])sel=names[0];const m=C.mm[sel];
+  h=head('Cari Anggota','Pilih nama untuk melihat simpanan dan sisa utang')+`<div class="card"><select style="width:100%;font-size:16px;padding:10px" onchange="sel=this.value;render()">${names.map(n=>`<option ${n===sel?'selected':''}>${esc(n)}</option>`).join('')}</select>
+  <div class="grid" style="margin-top:12px">${[['Total Simpanan',m.tot],['Total Ambil Sembako',m.ab],['Sudah Dibayar',m.by],['Sisa Utang',m.sisa],['Sisa Jatah Pinjam',m.jt]].map(x=>`<div class="k"><span>${x[0]}</span><b>${rp(x[1])}</b></div>`).join('')}</div>
+  <div class="big ${m.st==='BOLEH AMBIL'?'g':m.st==='JATAH HABIS'?'y':'rd'}">${m.st==='BOLEH AMBIL'?'BOLEH AMBIL SEMBAKO':m.st==='JATAH HABIS'?'JATAH HABIS - belum boleh ambil lagi':'TIDAK BOLEH - utang lebih besar dari simpanan'}</div></div>`}
+ if(tab==='anggota')h=head('Anggota','Tambah anggota baru, atau hapus dengan tombol Hapus')+form('a',[['n','Nama Lengkap','text'],['rw','RW','sel',['RW 01','RW 02','RW 03','RW 04','RW 05','RW 06','RW 07','RW 08']],['t','Tanggal Bergabung','date']],'ang','')+`<div class="card">${tbl([['Nama',x=>esc(x.n)],['RW',x=>x.rw],['Simpanan',x=>rp(x.tot),'r'],['Sisa Utang',x=>rp(x.sisa),'r'],['Status',x=>badge(x.st)]],C.M,'ang')}</div>`;
+ if(tab==='simpanan'){
+  const jenis=sub==='pokok'?'Pokok':'Bulanan',rows=S.sim.map((x,i)=>({...x,_i:i})).filter(x=>x.j===jenis);
+  const sw=`<div class="row" style="justify-content:flex-start;gap:8px"><button class="btn ${sub==='pokok'?'':'o'}" onclick="sub='pokok';render()">Simpanan Pokok</button><button class="btn ${sub==='bulanan'?'':'o'}" onclick="sub='bulanan';render()">Simpanan Wajib (Bulanan)</button></div>`;
+  if(sub==='pokok'){const cnt={},cum={};
+   const pr=rows.map(x=>{cnt[x.n]=(cnt[x.n]||0)+1;cum[x.n]=(cum[x.n]||0)+x.v;return{...x,c2:!C.mm[x.n]?'Nama tidak ada':cnt[x.n]>S.set.cicil?'Cicilan pokok lebih dari batas':cum[x.n]>S.set.pokok?'Lebih dari simpanan pokok':'OK'}}).reverse();
+   h=head('Simpanan','Pokok dan Wajib (Bulanan) dipisah')+sw+form('s',[['d','Tanggal','date'],['n','Nama Anggota','sel',names],['v','Jumlah (Rp)','num']],'sim','Simpanan pokok '+rp(S.set.pokok)+', boleh dicicil sampai '+S.set.cicil+' kali.')+
+   `<div class="card"><b>Status Simpanan Pokok</b>${tbl([['Nama',x=>esc(x.n)],['Sudah Bayar',x=>rp(x.pk),'r'],['Kurang',x=>rp(x.kP),'r'],['Status',x=>`<span class="b ${x.kP?'y':'g'}">${x.kP?'Belum lunas':'Lunas'}</span>`]],C.M)}</div>`+
+   `<div class="card"><b>Riwayat Setoran Pokok</b>${tbl([['Tanggal',x=>x.d],['Nama',x=>esc(x.n)],['Jumlah',x=>rp(x.v),'r'],['Cek',x=>badge(x.c2)]],pr,'sim')}</div>`}
+  else{const bl=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],now=new Date(),ni=now.getFullYear()*12+now.getMonth();
+   const mat=C.M.map(m=>{const jd=new Date(m.t),ji=jd.getFullYear()*12+jd.getMonth();let tot=0;
+    const cells=bl.map((_,mo)=>{const paid=sum(S.sim.filter(x=>x.j==='Bulanan'&&x.n===m.k&&+x.d.slice(0,4)===thn&&+x.d.slice(5,7)-1===mo),x=>x.v);tot+=paid;const due=thn*12+mo>=ji&&thn*12+mo<=ni;
+     return`<td class="r ${paid>=S.set.bulanan?'g':paid>0?'y':due?'rd':'mu'}">${paid?paid.toLocaleString('id-ID'):due?'-':''}</td>`}).join('');
+    return`<tr><td>${esc(m.n)}</td>${cells}<td class="r"><b>${rp(tot)}</b></td><td class="r">${rp(m.kB)}</td></tr>`}).join('');
+   h=head('Simpanan','Pokok dan Wajib (Bulanan) dipisah')+sw+form('s',[['d','Tanggal','date'],['n','Nama Anggota','sel',names],['v','Jumlah (Rp)','num']],'sim','Iuran wajib '+rp(S.set.bulanan)+' per bulan. Bulan ditentukan dari tanggal setor.')+
+   `<div class="card"><div class="row"><b>Tabel Bulanan ${thn}</b><span><button class="btn o" onclick="thn--;render()">◀</button> <button class="btn o" onclick="thn++;render()">▶</button></span></div><p class="hint">Hijau = lunas, kuning = kurang, merah = belum bayar, kosong = belum waktunya.</p><div class="tw"><table class="mx"><tr><th>Nama</th>${bl.map(b=>`<th class="r">${b}</th>`).join('')}<th class="r">Total ${thn}</th><th class="r">Kurang (semua)</th></tr>${mat}</table></div></div>`+
+   `<div class="card"><b>Riwayat Setoran Wajib</b>${tbl([['Tanggal',x=>x.d],['Nama',x=>esc(x.n)],['Jumlah',x=>rp(x.v),'r']],rows.reverse(),'sim')}</div>`}}
+ if(tab==='sembako'){const run={};const rows=C.amb.map((x,i)=>{const m=C.mm[x.n];run[x.n]=(run[x.n]||0)+x.tot;const jt=m?m.batas-(run[x.n]-m.by):null;return{...x,ck:jt===null?'Nama tidak ada':jt<0?'MELEBIHI BATAS':'OK',_i:i}}).reverse();
+  h=head('Ambil Sembako','1 baris = 1 jenis barang. Merah = melebihi jatah.')+form('m',[['d','Tanggal','date'],['n','Nama Anggota','sel',names],['b','Barang','sel',S.brg.map(b=>b.n)],['q','Jumlah','num']],'amb','')+`<div class="card">${tbl([['Tanggal',x=>x.d],['Nama',x=>esc(x.n)],['Barang',x=>esc(x.b)],['Jml',x=>x.q,'r'],['Total',x=>rp(x.tot),'r'],['Cek',x=>badge(x.ck)]],rows,'amb')}</div>`}
+ if(tab==='utang')h=head('Catat Pembayaran Utang','Cicil atau lunas = 1 baris')+form('u',[['d','Tanggal','date'],['n','Nama Anggota','sel',names],['v','Jumlah Bayar (Rp)','num'],['c','Catatan','sel',['Cicilan','Lunas']]],'bay','')+`<div class="card">${tbl([['Tanggal',x=>x.d],['Nama',x=>esc(x.n)],['Dibayar',x=>rp(x.v),'r'],['Catatan',x=>x.c],['Sisa Utang Sekarang',x=>C.mm[x.n]?rp(C.mm[x.n].sisa):'Nama tidak ada','r']],S.bay,'bay')}</div>`;
+ if(tab==='barang')h=head('Barang','Beli stok lagi? Isi kolom Tambah Stok.')+form('b',[['n','Nama Barang','text'],['u','Satuan','text'],['m','Harga Modal','num'],['j','Harga Jual','num'],['s0','Stok Awal','num']],'brg','')+`<div class="card">${tbl([['Barang',x=>esc(x.n)],['Harga Jual',x=>rp(x.j),'r'],['Tambah Stok',(x,i)=>`<input type="number" min="0" value="${x.s1||0}" style="min-width:70px;width:80px" onchange="S.brg[${i}].s1=+this.value;save();render()">`],['Sisa',x=>x.s+' '+esc(x.u),'r'],['Status',x=>badge(x.st)]],C.B,'brg')}</div>`;
+ if(tab==='atur'){const p=S.set;const fld=(k,l,t='text')=>`<label style="display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:3px">${l}<input type="${t}" value="${esc(p[k])}" onchange="S.set.${k}=${t==='number'?'+this.value':'this.value'};save();render()"></label>`;
+  h=head('Pengaturan','Biasanya cukup diatur sekali')+`<div class="card add">${fld('nama','Nama Koperasi')}${fld('desa','Desa / Kelurahan')}${fld('pokok','Simpanan Pokok (Rp)','number')}${fld('cicil','Maks Cicilan Pokok','number')}${fld('bulanan','Simpanan Bulanan (Rp)','number')}<label style="display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:3px">Batas pinjaman dari<select onchange="S.set.dasar=this.value;save();render()"><option value="Total" ${p.dasar==='Total'?'selected':''}>Total Simpanan (Pokok + Bulanan)</option><option value="Bulanan" ${p.dasar==='Bulanan'?'selected':''}>Simpanan Bulanan saja</option></select></label></div><button class="btn o" onclick="resetData()">Kembalikan data contoh</button>`}
+ el.innerHTML=h}
+initStorage();
+</script></body></html>
